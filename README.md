@@ -18,11 +18,11 @@
 
 | Главное меню | Игровое поле |
 |:---:|:---:|
-| ![Меню](screenshots/match menu.png) | ![Игра](screenshots/gameplay.png) |
+| ![Меню](https://github.com/bushuevd4-rgb/Match3gamedevelopment/blob/main/screenshots/match_menu.PNG) | ![Игра](https://github.com/bushuevd4-rgb/Match3gamedevelopment/blob/main/screenshots/gameplay.PNG) |
 
 | Карта уровней |
 |:---:|
-| ![Карта](screenshots/game menu.png) |
+| ![Карта](https://github.com/bushuevd4-rgb/Match3gamedevelopment/blob/main/screenshots/game_menu.PNG) |
 
 ## 👾 Персонажи
 
