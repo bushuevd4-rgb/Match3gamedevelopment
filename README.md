@@ -18,11 +18,11 @@
 
 | Главное меню | Игровое поле |
 |:---:|:---:|
-| ![Меню](screenshots/menu.png) | ![Игра](screenshots/game.png) |
+| ![Меню](screenshots/match menu.png) | ![Игра](screenshots/gameplay.png) |
 
 | Карта уровней |
 |:---:|
-| ![Карта](screenshots/map.png) |
+| ![Карта](screenshots/game menu.png) |
 
 ## 👾 Персонажи
 
