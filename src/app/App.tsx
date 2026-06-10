@@ -86,6 +86,7 @@ export default function App() {
           level={selectedLevel}
           navigate={navigate}
           updateProfile={updateProfile}
+          startGame={startGame}
         />
       )}
       {screen === 'leaderboard' && (

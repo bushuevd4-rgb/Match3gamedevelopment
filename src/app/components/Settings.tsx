@@ -39,58 +39,58 @@ export function Settings({ profile, navigate, updateProfile }: Props) {
       style={{ background: 'linear-gradient(160deg, #FFE4F3 0%, #EDD5FF 50%, #D5EEFF 100%)' }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-5 pb-3 flex-shrink-0">
+      <div className="flex items-center gap-2 px-3 pt-3 pb-2 flex-shrink-0">
         <button
           onClick={() => navigate('menu')}
-          className="rounded-xl bg-white/70 px-3 py-1 font-bold text-purple-600 shadow text-sm"
+          className="rounded-lg bg-white/70 px-2 py-1 font-bold text-purple-600 shadow text-xs"
         >
           ←
         </button>
-        <h2 className="font-black text-purple-800 text-xl">Настройки</h2>
+        <h2 className="font-black text-purple-800" style={{ fontSize: '0.9rem' }}>Настройки</h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-8 flex flex-col gap-4">
+      <div className="flex-1 overflow-y-auto px-2 pb-4 flex flex-col gap-2">
         {/* Profile */}
         <Section title="👤 Профиль">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <div
-              className="w-12 h-12 rounded-full flex items-center justify-center text-2xl flex-shrink-0"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-lg flex-shrink-0"
               style={{ background: 'linear-gradient(135deg, #FF6BAE, #7C3AED)' }}
             >
               🍭
             </div>
             <div className="flex-1 min-w-0">
               {editingName ? (
-                <div className="flex gap-2">
+                <div className="flex gap-1">
                   <input
                     autoFocus
                     value={nameInput}
                     onChange={e => setNameInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') saveName(); if (e.key === 'Escape') setEditingName(false); }}
                     maxLength={20}
-                    className="flex-1 rounded-xl px-3 py-1.5 font-bold text-purple-800 border-2 border-purple-300 outline-none"
-                    style={{ background: '#F3E8FF', fontSize: '0.9rem' }}
+                    className="flex-1 rounded-lg px-2 py-1 font-bold text-purple-800 border-2 border-purple-300 outline-none"
+                    style={{ background: '#F3E8FF', fontSize: '0.75rem' }}
                   />
                   <button
                     onClick={saveName}
-                    className="rounded-xl px-3 py-1.5 font-bold text-white text-sm"
+                    className="rounded-lg px-2 py-1 font-bold text-white text-xs"
                     style={{ background: 'linear-gradient(135deg, #FF6BAE, #7C3AED)' }}
                   >
                     ✓
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
-                  <p className="font-black text-purple-800 truncate" style={{ fontSize: '1rem' }}>{profile.name}</p>
+                <div className="flex items-center gap-1">
+                  <p className="font-black text-purple-800 truncate" style={{ fontSize: '0.8rem' }}>{profile.name}</p>
                   <button
                     onClick={() => { setNameInput(profile.name); setEditingName(true); }}
-                    className="text-purple-400 hover:text-purple-600 text-sm"
+                    className="text-purple-400 hover:text-purple-600 text-xs"
                   >
                     ✏️
                   </button>
                 </div>
               )}
-              <p className="text-purple-500 text-xs">Уровень {profile.currentLevel} • {profile.totalScore.toLocaleString('ru')} очков</p>
+              <p className="text-purple-500" style={{ fontSize: '0.65rem' }}>Уровень {profile.currentLevel} • {profile.totalScore.toLocaleString('ru')} очков</p>
             </div>
           </div>
         </Section>
@@ -114,13 +114,12 @@ export function Settings({ profile, navigate, updateProfile }: Props) {
 
         {/* Language */}
         <Section title="🌍 Язык">
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             {['ru', 'en'].map(lang => (
               <button
                 key={lang}
-                className="flex-1 rounded-xl py-2 font-bold"
+                className="flex-1 rounded-lg py-1 font-bold text-xs"
                 style={{
-                  fontSize: '0.85rem',
                   background: profile.language === lang
                     ? 'linear-gradient(135deg, #FF6BAE, #7C3AED)'
                     : 'rgba(124,58,237,0.1)',
@@ -136,7 +135,7 @@ export function Settings({ profile, navigate, updateProfile }: Props) {
 
         {/* Stats */}
         <Section title="📊 Статистика">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-1">
             {[
               { label: 'Игр сыграно', value: profile.gamesPlayed, icon: '🎮' },
               { label: 'Дней подряд', value: profile.streakDays, icon: '🔥' },
@@ -145,12 +144,12 @@ export function Settings({ profile, navigate, updateProfile }: Props) {
             ].map(item => (
               <div
                 key={item.label}
-                className="rounded-2xl px-3 py-3 text-center"
+                className="rounded-lg px-2 py-2 text-center"
                 style={{ background: 'rgba(124,58,237,0.08)' }}
               >
-                <p style={{ fontSize: '1.4rem' }}>{item.icon}</p>
-                <p className="font-black text-purple-800" style={{ fontSize: '0.9rem' }}>{item.value}</p>
-                <p className="text-purple-500" style={{ fontSize: '0.65rem' }}>{item.label}</p>
+                <p style={{ fontSize: '0.9rem' }}>{item.icon}</p>
+                <p className="font-black text-purple-800" style={{ fontSize: '0.8rem' }}>{item.value}</p>
+                <p className="text-purple-500" style={{ fontSize: '0.6rem' }}>{item.label}</p>
               </div>
             ))}
           </div>
@@ -158,15 +157,15 @@ export function Settings({ profile, navigate, updateProfile }: Props) {
 
         {/* Save */}
         <Section title="💾 Сохранение">
-          <p className="text-purple-500 text-xs mb-3">
-            Игра автоматически сохраняется после каждого уровня. Прогресс хранится на этом устройстве.
+          <p className="text-purple-500" style={{ fontSize: '0.7rem', marginBottom: '0.5rem' }}>
+            Игра автоматически сохраняется после каждого уровня.
           </p>
           <button
             onClick={() => setShowReset(true)}
-            className="w-full rounded-2xl py-3 font-bold text-red-600"
-            style={{ background: '#FEE2E2', fontSize: '0.9rem' }}
+            className="w-full rounded-xl py-1 font-bold text-red-600"
+            style={{ background: '#FEE2E2', fontSize: '0.75rem' }}
           >
-            🗑️ Сбросить прогресс
+            🗑️ Сбросить
           </button>
         </Section>
 
@@ -190,27 +189,27 @@ export function Settings({ profile, navigate, updateProfile }: Props) {
               animate={{ scale: 1 }}
               exit={{ scale: 0.8 }}
               transition={{ type: 'spring', stiffness: 350 }}
-              className="bg-white rounded-3xl p-6 shadow-2xl text-center max-w-xs w-full"
+              className="bg-white rounded-2xl p-4 shadow-2xl text-center max-w-xs w-full"
             >
-              <div className="text-4xl mb-3">⚠️</div>
-              <h3 className="font-black text-red-600 mb-2" style={{ fontSize: '1.1rem' }}>Сбросить прогресс?</h3>
-              <p className="text-gray-500 mb-5" style={{ fontSize: '0.82rem' }}>
-                Все уровни, очки и достижения будут удалены. Это действие нельзя отменить!
+              <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⚠️</div>
+              <h3 className="font-black text-red-600 mb-1" style={{ fontSize: '0.85rem' }}>Сбросить прогресс?</h3>
+              <p className="text-gray-500 mb-3" style={{ fontSize: '0.7rem' }}>
+                Все данные будут удалены!
               </p>
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <button
                   onClick={resetProgress}
-                  className="flex-1 rounded-2xl py-2 font-bold text-white text-sm"
-                  style={{ background: '#DC2626' }}
+                  className="flex-1 rounded-lg py-1 font-bold text-white"
+                  style={{ background: '#DC2626', fontSize: '0.7rem' }}
                 >
-                  Да, сбросить
+                  Да
                 </button>
                 <button
                   onClick={() => setShowReset(false)}
-                  className="flex-1 rounded-2xl py-2 font-bold text-sm text-purple-600"
-                  style={{ background: '#F3E8FF' }}
+                  className="flex-1 rounded-lg py-1 font-bold text-purple-600"
+                  style={{ background: '#F3E8FF', fontSize: '0.7rem' }}
                 >
-                  Отмена
+                  Нет
                 </button>
               </div>
             </motion.div>
@@ -229,8 +228,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       className="rounded-3xl overflow-hidden shadow"
       style={{ background: 'rgba(255,255,255,0.75)' }}
     >
-      <div className="px-4 pt-4 pb-1">
-        <p className="font-black text-purple-700 mb-3" style={{ fontSize: '0.9rem' }}>{title}</p>
+      <div className="px-3 pt-3 pb-1">
+        <p className="font-black text-purple-700 mb-2" style={{ fontSize: '0.8rem' }}>{title}</p>
         {children}
       </div>
       <div className="h-4" />
@@ -244,22 +243,22 @@ function ToggleRow({
   label: string; value: boolean; onChange: (v: boolean) => void; icon: string;
 }) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <span>{icon}</span>
-        <p className="font-bold text-gray-700" style={{ fontSize: '0.88rem' }}>{label}</p>
+    <div className="flex items-center justify-between py-1">
+      <div className="flex items-center gap-1">
+          <span style={{ fontSize: '0.8rem' }}>{icon}</span>
+          <p className="font-bold text-gray-700" style={{ fontSize: '0.75rem' }}>{label}</p>
       </div>
       <motion.button
         onClick={() => onChange(!value)}
         animate={{ background: value ? 'linear-gradient(135deg, #FF6BAE, #7C3AED)' : '#E5E7EB' }}
         transition={{ duration: 0.2 }}
         className="relative rounded-full flex-shrink-0"
-        style={{ width: 44, height: 24 }}
+        style={{ width: 36, height: 20 }}
       >
         <motion.div
-          animate={{ x: value ? 20 : 2 }}
+          animate={{ x: value ? 16 : 2 }}
           transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-          className="absolute top-1 w-4 h-4 rounded-full bg-white shadow"
+          className="absolute top-0.5 w-3 h-3 rounded-full bg-white shadow"
         />
       </motion.button>
     </div>

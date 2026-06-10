@@ -4,6 +4,7 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Screen, GameMode, PlayerProfile } from '../App';
 import yablochkoImg from '../../imports/yablo_chkoo.png';
 import kepaMitaImg from '../../imports/KEPA_MITA.png';
+import { soundManager } from '../../utils/soundManager';
 
 // ─── Tile config ──────────────────────────────────────────────────────────────
 const TILES = [
@@ -149,9 +150,10 @@ interface Props {
   level: number;
   navigate: (screen: Screen) => void;
   updateProfile: (u: Partial<PlayerProfile>) => void;
+  startGame?: (mode: GameMode, level?: number) => void;
 }
 
-export function GameBoard({ profile, mode, level, navigate, updateProfile }: Props) {
+export function GameBoard({ profile, mode, level, navigate, updateProfile, startGame }: Props) {
   const cfg = getLevelConfig(level);
   const numTypes = mode === 'survival' ? 6 : cfg.types;
 
@@ -189,8 +191,35 @@ export function GameBoard({ profile, mode, level, navigate, updateProfile }: Pro
     if (dialogueTimerRef.current) clearTimeout(dialogueTimerRef.current);
     setSpeaking(who);
     setDialogue(text);
+    soundManager.playDialogue();
+    soundManager.speakDialogue(text, who);
     dialogueTimerRef.current = setTimeout(() => setSpeaking(null), 3000);
   }, []);
+
+  // Initialize sound manager
+  useEffect(() => {
+    soundManager.setSoundEnabled(profile.soundEnabled);
+  }, [profile.soundEnabled]);
+
+  // ─── Reset game when level changes ──────────────────────────────────────
+  useEffect(() => {
+    const newCfg = getLevelConfig(level);
+    const newNumTypes = mode === 'survival' ? 6 : newCfg.types;
+    boardRef.current = createBoard(newNumTypes);
+    setBoardDisplay(boardRef.current);
+    setScore(0);
+    scoreRef.current = 0;
+    setMoves(newCfg.moves);
+    setTimeLeft(180);
+    setTotalTurns(0);
+    totalTurnsRef.current = 0;
+    setCombo(0);
+    setSurvivalRows(0);
+    setHighlighted(new Set());
+    setSelected(null);
+    isProcessingRef.current = false;
+    setGamePhase('playing');
+  }, [level, mode]);
 
   // ─── Time attack timer ────────────────────────────────────────────────────
   useEffect(() => {
@@ -226,6 +255,7 @@ export function GameBoard({ profile, mode, level, navigate, updateProfile }: Pro
 
       depth++;
       setHighlighted(new Set(matches));
+      soundManager.playMatch();
 
       const pts = Math.floor(matches.size * 15 * (1 + (depth - 1) * 0.6));
       scoreRef.current += pts;
@@ -289,12 +319,14 @@ export function GameBoard({ profile, mode, level, navigate, updateProfile }: Pro
     [nb[sr][sc], nb[r][c]] = [nb[r][c], nb[sr][sc]];
     if (findMatches(nb).size === 0) {
       // Invalid – shake
+      soundManager.playInvalid();
       setShake(true);
       setTimeout(() => setShake(false), 400);
       setSelected(null);
       return;
     }
 
+    soundManager.playSwap();
     setSelected(null);
     isProcessingRef.current = true;
 
@@ -315,8 +347,9 @@ export function GameBoard({ profile, mode, level, navigate, updateProfile }: Pro
     const cascadeDepth = await processCascade(nb, 0);
     setCombo(cascadeDepth);
 
-    // Combo dialogue
+    // Combo dialogue and sound
     if (cascadeDepth >= 2) {
+      soundManager.playCombo();
       const who = newTurns % 3 === 0 ? 'kepa' : 'yablo';
       if (who === 'kepa') showDialogue('kepa', KEPA_LINES[Math.floor(Math.random() * KEPA_LINES.length)]);
       else showDialogue('yablo', `Комбо x${cascadeDepth}! 🌟 ${YABLO_LINES[Math.floor(Math.random() * YABLO_LINES.length)]}`);
@@ -350,10 +383,23 @@ export function GameBoard({ profile, mode, level, navigate, updateProfile }: Pro
     const currentMoves = mode === 'classic' ? moves - 1 : moves;
 
     if (mode === 'classic') {
-      if (currentScore >= cfg.goal) { setGamePhase('won'); return; }
-      if (currentMoves <= 0) { setGamePhase(currentScore >= cfg.goal ? 'won' : 'lost'); }
+      if (currentScore >= cfg.goal) { 
+        soundManager.playWin();
+        setGamePhase('won'); 
+        return; 
+      }
+      if (currentMoves <= 0) { 
+        if (currentScore >= cfg.goal) {
+          soundManager.playWin();
+          setGamePhase('won');
+        } else {
+          soundManager.playLose();
+          setGamePhase('lost');
+        }
+      }
     }
     if (mode === 'survival' && !hasValidMoves(boardRef.current)) {
+      soundManager.playLose();
       setGamePhase('lost');
     }
   }, [
@@ -365,7 +411,13 @@ export function GameBoard({ profile, mode, level, navigate, updateProfile }: Pro
   useEffect(() => {
     if (gamePhase !== 'playing') return;
     if (mode === 'classic' && moves <= 0) {
-      setGamePhase(score >= cfg.goal ? 'won' : 'lost');
+      if (score >= cfg.goal) {
+        soundManager.playWin();
+        setGamePhase('won');
+      } else {
+        soundManager.playLose();
+        setGamePhase('lost');
+      }
     }
   }, [moves, score, mode, cfg.goal, gamePhase]);
 
@@ -423,11 +475,11 @@ export function GameBoard({ profile, mode, level, navigate, updateProfile }: Pro
 
       {/* Game area: characters + board */}
       <div
-        className="flex items-center justify-center gap-1 flex-1 w-full"
-        style={{ maxWidth: 700, minHeight: 0 }}
+        className="flex items-center justify-center gap-2 flex-1 w-full"
+        style={{ maxWidth: '95vw', minHeight: 0, padding: '0 8px' }}
       >
         {/* Яблочко (left) */}
-        <div className="flex flex-col items-center" style={{ width: 72, flexShrink: 0 }}>
+        <div className="flex flex-col items-center flex-shrink-0" style={{ width: 'clamp(100px, 15vw, 160px)' }}>
           <AnimatePresence>
             {speaking === 'yablo' && (
               <motion.div
@@ -444,10 +496,18 @@ export function GameBoard({ profile, mode, level, navigate, updateProfile }: Pro
             )}
           </AnimatePresence>
           <motion.div
-            animate={{ y: speaking === 'yablo' ? [0, -4, 0] : [0, -3, 0] }}
-            transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+            animate={{
+              y: speaking === 'yablo' ? [0, -4, 0] : [0, -3, 0],
+              rotate: speaking === 'yablo' ? [0, -1.5, 1.5, -1.5, 1.5, 0] : 0,
+              x: speaking === 'yablo' ? [0, -2, 2, -1, 1, 0] : 0,
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: speaking === 'yablo' ? 0.5 : 2.5,
+              ease: 'easeInOut',
+            }}
           >
-            <ImageWithFallback src={yablochkoImg} alt="Яблочко" style={{ width: 64, height: 'auto' }} />
+            <ImageWithFallback src={yablochkoImg} alt="Яблочко" style={{ width: 'clamp(90px, 14vw, 150px)', height: 'auto' }} />
           </motion.div>
           <p style={{ fontSize: '0.6rem', color: '#BE185D', fontWeight: 800, marginTop: 2, textAlign: 'center' }}>Яблочко</p>
         </div>
@@ -549,7 +609,7 @@ export function GameBoard({ profile, mode, level, navigate, updateProfile }: Pro
         </div>
 
         {/* Кепа Мита (right) */}
-        <div className="flex flex-col items-center" style={{ width: 72, flexShrink: 0 }}>
+        <div className="flex flex-col items-center flex-shrink-0" style={{ width: 'clamp(100px, 15vw, 160px)' }}>
           <AnimatePresence>
             {speaking === 'kepa' && (
               <motion.div
@@ -566,10 +626,19 @@ export function GameBoard({ profile, mode, level, navigate, updateProfile }: Pro
             )}
           </AnimatePresence>
           <motion.div
-            animate={{ y: speaking === 'kepa' ? [0, -4, 0] : [0, -2, 0] }}
-            transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut', delay: 0.8 }}
+            animate={{
+              y: speaking === 'kepa' ? [0, -4, 0] : [0, -2, 0],
+              rotate: speaking === 'kepa' ? [0, -1.5, 1.5, -1.5, 1.5, 0] : 0,
+              x: speaking === 'kepa' ? [0, -2, 2, -1, 1, 0] : 0,
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: speaking === 'kepa' ? 0.5 : 3,
+              ease: 'easeInOut',
+              delay: speaking === 'kepa' ? 0 : 0.8,
+            }}
           >
-            <ImageWithFallback src={kepaMitaImg} alt="Кепа Мита" style={{ width: 64, height: 'auto' }} />
+            <ImageWithFallback src={kepaMitaImg} alt="Кепа Мита" style={{ width: 'clamp(90px, 14vw, 150px)', height: 'auto' }} />
           </motion.div>
           <p style={{ fontSize: '0.6rem', color: '#1D4ED8', fontWeight: 800, marginTop: 2, textAlign: 'center' }}>Кепа Мита</p>
         </div>
@@ -633,8 +702,31 @@ export function GameBoard({ profile, mode, level, navigate, updateProfile }: Pro
                 >
                   🔄 Снова
                 </button>
+                {gamePhase === 'won' && startGame && (
+                  <button
+                    onClick={() => {
+                      updateProfile({ 
+                        currentLevel: Math.max(profile.currentLevel, level + 1),
+                        totalScore: profile.totalScore + score 
+                      });
+                      startGame('classic', level + 1);
+                    }}
+                    className="rounded-2xl text-white font-bold py-3"
+                    style={{ background: 'linear-gradient(135deg, #10B981, #059669)', boxShadow: '0 4px 0 rgba(0,0,0,0.15)' }}
+                  >
+                    ➡️ Следующий уровень
+                  </button>
+                )}
                 <button
-                  onClick={() => navigate('menu')}
+                  onClick={() => {
+                    if (gamePhase === 'won') {
+                      updateProfile({ 
+                        currentLevel: Math.max(profile.currentLevel, level + 1),
+                        totalScore: profile.totalScore + score 
+                      });
+                    }
+                    navigate('menu');
+                  }}
                   className="rounded-2xl font-bold py-2 text-purple-600"
                   style={{ background: '#F3E8FF' }}
                 >
